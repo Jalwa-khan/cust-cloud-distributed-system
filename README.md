@@ -1,8 +1,4 @@
-# CUST Cloud & Distributed Computing Platform
-### CPE4541 CEP Project — Department of ECE, Capital University of Science and Technology
-**Instructor:** Dr. Waseem Abbas &nbsp;|&nbsp; **Lab Instructor:** Areeba Nasim &nbsp;|&nbsp; **Due:** 24 June 2026
 
----
 
 ## Project Structure
 ```
