@@ -1,0 +1,83 @@
+version: "3.9"
+
+services:
+
+  registration:
+    build: ./services/registration
+    container_name: cust_registration
+    ports:
+      - "5001:5001"
+    volumes:
+      - registration_data:/data
+    networks:
+      - cust_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD","python","-c","import urllib.request; urllib.request.urlopen('http://localhost:5001/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  lms:
+    build: ./services/lms
+    container_name: cust_lms
+    ports:
+      - "5002:5002"
+    volumes:
+      - lms_data:/data
+    networks:
+      - cust_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD","python","-c","import urllib.request; urllib.request.urlopen('http://localhost:5002/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  examination:
+    build: ./services/examination
+    container_name: cust_examination
+    ports:
+      - "5003:5003"
+    volumes:
+      - exam_data:/data
+    networks:
+      - cust_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD","python","-c","import urllib.request; urllib.request.urlopen('http://localhost:5003/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  api-gateway:
+    build: ./services/api-gateway
+    container_name: cust_gateway
+    ports:
+      - "5000:5000"
+    environment:
+      - REGISTRATION_URL=http://registration:5001
+      - LMS_URL=http://lms:5002
+      - EXAM_URL=http://examination:5003
+    depends_on:
+      registration:
+        condition: service_healthy
+      lms:
+        condition: service_healthy
+      examination:
+        condition: service_healthy
+    networks:
+      - cust_network
+    restart: unless-stopped
+
+volumes:
+  registration_data:
+  lms_data:
+  exam_data:
+
+networks:
+  cust_network:
+    driver: bridge

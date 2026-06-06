@@ -1,0 +1,33 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: registration-pvc
+  namespace: cust-cloud
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: lms-pvc
+  namespace: cust-cloud
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: exam-pvc
+  namespace: cust-cloud
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 1Gi

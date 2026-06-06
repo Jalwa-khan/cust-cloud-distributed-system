@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cust-config
+  namespace: cust-cloud
+data:
+  REGISTRATION_URL: "http://registration-service:5001"
+  LMS_URL: "http://lms-service:5002"
+  EXAM_URL: "http://examination-service:5003"

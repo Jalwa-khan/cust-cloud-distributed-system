@@ -1,0 +1,178 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lms
+  namespace: cust-cloud
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: lms
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: lms
+    spec:
+      containers:
+        - name: lms
+          image: cust/lms:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5002
+          envFrom:
+            - configMapRef:
+                name: cust-config
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5002
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5002
+            initialDelaySeconds: 20
+            periodSeconds: 30
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "300m"
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: lms-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lms-service
+  namespace: cust-cloud
+spec:
+  selector:
+    app: lms
+  ports:
+    - port: 5002
+      targetPort: 5002
+  type: ClusterIP
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: lms-hpa
+  namespace: cust-cloud
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: lms
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: examination
+  namespace: cust-cloud
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: examination
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: examination
+    spec:
+      containers:
+        - name: examination
+          image: cust/examination:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5003
+          envFrom:
+            - configMapRef:
+                name: cust-config
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5003
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5003
+            initialDelaySeconds: 20
+            periodSeconds: 30
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "300m"
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: exam-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: examination-service
+  namespace: cust-cloud
+spec:
+  selector:
+    app: examination
+  ports:
+    - port: 5003
+      targetPort: 5003
+  type: ClusterIP
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: examination-hpa
+  namespace: cust-cloud
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: examination
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
